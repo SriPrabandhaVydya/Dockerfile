@@ -1,39 +1,20 @@
 pipeline {
-    agent any
-    environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+  agent any
+  stages {
+    stage ('Build') {
+      steps {
+        bat 'printenv'
+        bat 'docker build -t sriprabandhavydya/Dockerfile:"%GIT_COMMIT%" .'
+      }
     }
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+    
+    stage ('Publish to DockerHub') {
+      steps {
+        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+          bat 'docker push sriprabandhavydya/Dockerfile:"%GIT_COMMIT%"'
         }
-        stage('Build') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
-                    } else {
-                        bat 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
-                    }
-                }
-            }
-        }
-        stage('Publish') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_HUB_CREDENTIALS_PSW', usernameVariable: 'DOCKER_HUB_CREDENTIALS_USR')]) {
-                    script {
-                        if (isUnix()) {
-                            sh 'docker login -u $DOCKER_HUB_CREDENTIALS_USR -p $DOCKER_HUB_CREDENTIALS_PSW'
-                            sh 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
-                        } else {
-                            bat 'docker login -u %DOCKER_HUB_CREDENTIALS_USR% -p %DOCKER_HUB_CREDENTIALS_PSW%'
-                            bat 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
-                        }
-                    }
-                }
-            }
-        }
+      }
     }
+  }
 }
+                   
