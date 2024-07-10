@@ -1,16 +1,25 @@
 pipeline {
   agent any
   stages {
-    stage ('Build') {
+    stage('Build') {
       steps {
-        bat 'docker build -t sriprabandhavydya/jenkinsdemo:%GIT_COMMIT% .'
+        script {
+          // Replace 'docker-hub' with your Docker Hub credentials ID
+          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
+            def imageTag = "${env.GIT_COMMIT}" // Assuming GIT_COMMIT is set by Jenkins
+            docker.build("sriprabandhavydya/jenkinsdemo:${imageTag}", ".")
+          }
+        }
       }
     }
     
-    stage ('Publish to DockerHub') {
+    stage('Publish to DockerHub') {
       steps {
-        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-          bat 'docker push sriprabandhavydya/jenkinsdemo:%GIT_COMMIT%'
+        script {
+          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
+            def imageTag = "${env.GIT_COMMIT}" // Assuming GIT_COMMIT is set by Jenkins
+            docker.image("sriprabandhavydya/jenkinsdemo:${imageTag}").push()
+          }
         }
       }
     }
