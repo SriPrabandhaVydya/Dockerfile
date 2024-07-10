@@ -8,8 +8,16 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'printenv'
-                sh 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
+                script {
+                    def dockerCommand = 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
+                    if (isUnix()) {
+                        sh 'printenv'
+                        sh dockerCommand
+                    } else {
+                        bat 'set'
+                        bat dockerCommand
+                    }
+                }
             }
         }
 
@@ -17,10 +25,16 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_HUB_CREDENTIALS) {
-                        sh 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
+                        def dockerCommand = 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
+                        if (isUnix()) {
+                            sh dockerCommand
+                        } else {
+                            bat dockerCommand
+                        }
                     }
                 }
             }
         }
     }
 }
+
