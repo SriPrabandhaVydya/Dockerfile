@@ -1,25 +1,19 @@
 FROM centos:7
 
-# Set DNS servers temporarily for yum
-RUN echo "nameserver 8.8.8.8" > /tmp/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /tmp/resolv.conf && \
-    cp /tmp/resolv.conf /etc/resolv.conf
+# Set up users and passwords
+RUN useradd SriPrabandhaVydya && \
+    echo "1234" | passwd SriPrabandhaVydya --stdin
 
-# Install necessary packages including MySQL
-RUN yum clean all && \
-    yum makecache && \
-    yum -y update && \
-    yum -y install mysql && \
-    yum clean all
+# Update and install MySQL
+RUN yum update -y && \
+    yum install -y mysql
 
-# Remove temporary resolv.conf
-RUN rm -f /etc/resolv.conf
+# Clean up YUM caches to reduce image size
+RUN yum clean all
 
-# Copy your application files and configurations
+# Optionally, if you want to copy files or set up configurations, you can add them here:
 # COPY ./path/to/your/application /app
+# EXPOSE 3306 (MySQL port, if necessary)
 
-# Define the port your application will run on
-# EXPOSE 8080
-
-# Command to run your application
-# CMD ["command", "to", "run", "your", "application"]
+# Command to run MySQL service or any other application
+# CMD ["mysqld"] (Example MySQL command, adjust as needed)
