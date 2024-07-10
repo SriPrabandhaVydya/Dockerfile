@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'printenv'
+                sh 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                script {
+                    docker.withRegistry('', DOCKER_HUB_CREDENTIALS) {
+                        sh 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
+                    }
+                }
+            }
+        }
+    }
+}
