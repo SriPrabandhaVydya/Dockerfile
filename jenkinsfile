@@ -1,40 +1,46 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
     }
-
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Build') {
             steps {
                 script {
-                    def dockerCommand = 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
                     if (isUnix()) {
-                        sh 'printenv'
-                        sh dockerCommand
+                        sh 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
                     } else {
-                        bat 'set'
-                        bat dockerCommand
+                        bat 'docker build -t sriprabandhavydya/Dockerfile:${BUILD_ID} .'
                     }
                 }
             }
         }
-
         stage('Publish') {
             steps {
-                script {
-                    docker.withRegistry('', DOCKER_HUB_CREDENTIALS) {
-                        def dockerCommand = 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_HUB_CREDENTIALS_PSW', usernameVariable: 'DOCKER_HUB_CREDENTIALS_USR')]) {
+                    script {
                         if (isUnix()) {
-                            sh dockerCommand
+                            sh 'docker login -u $DOCKER_HUB_CREDENTIALS_USR -p $DOCKER_HUB_CREDENTIALS_PSW'
+                            sh 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
                         } else {
-                            bat dockerCommand
+                            bat 'docker login -u %DOCKER_HUB_CREDENTIALS_USR% -p %DOCKER_HUB_CREDENTIALS_PSW%'
+                            bat 'docker push sriprabandhavydya/Dockerfile:${BUILD_ID}'
                         }
                     }
                 }
             }
         }
     }
+    post {
+        failure {
+            mail to: 'your-email@example.com',
+                 subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
+        }
+    }
 }
-
