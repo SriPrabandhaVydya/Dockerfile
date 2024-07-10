@@ -4,18 +4,16 @@ pipeline {
     stage ('Build') {
       steps {
         bat 'set'
-        bat 'docker build -t sriprabandhavydya/Dockerfile:"%GIT_COMMIT%" .'
+        bat 'docker build -t sriprabandhavydya/jenkinsdemo:%GIT_COMMIT% .'
       }
     }
     
     stage ('Publish to DockerHub') {
       steps {
         withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-          bat 'docker push sriprabandhavydya/Dockerfile:"%GIT_COMMIT%"'
+          bat 'docker push sriprabandhavydya/jenkinsdemo:%GIT_COMMIT%'
         }
       }
     }
   }
 }
-
-                   
