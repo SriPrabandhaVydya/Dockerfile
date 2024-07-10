@@ -1,27 +1,33 @@
 pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      steps {
-        script {
-          // Replace 'docker-hub' with your Docker Hub credentials ID
-          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
-            def imageTag = "${env.GIT_COMMIT}" // Assuming GIT_COMMIT is set by Jenkins
-            docker.build("sriprabandhavydya/jenkinsdemo:${imageTag}", ".")
-          }
-        }
-      }
+    agent any
+
+    environment {
+        DOCKER_HUB_USERNAME = 'SriPrabandhaVydya'
+        DOCKER_HUB_PASSWORD = credentials('docker-hub-creds')
+        DOCKER_IMAGE_NAME = "${DOCKER_HUB_USERNAME}/my-node-app"
+        DOCKER_IMAGE_TAG = "latest"
     }
-    
-    stage('Publish to DockerHub') {
-      steps {
-        script {
-          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
-            def imageTag = "${env.GIT_COMMIT}" // Assuming GIT_COMMIT is set by Jenkins
-            docker.image("sriprabandhavydya/jenkinsdemo:${imageTag}").push()
-          }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    // Build Docker image
+                    docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
+                }
+            }
         }
-      }
+
+        stage('Push') {
+            steps {
+                script {
+                    // Authenticate with Docker Hub
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-creds') {
+                        // Push Docker image to Docker Hub
+                        docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
     }
-  }
 }
