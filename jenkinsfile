@@ -3,7 +3,6 @@ pipeline {
   stages {
     stage ('Build') {
       steps {
-        bat 'set'
         bat 'docker build -t sriprabandhavydya/jenkinsdemo:%GIT_COMMIT% .'
       }
     }
