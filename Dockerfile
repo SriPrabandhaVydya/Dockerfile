@@ -6,9 +6,9 @@ RUN for user in SriPrabandhaVydya; do \
     echo "1234" | passwd $user --stdin; \
 done
 
-# Set DNS temporarily and install MySQL
-RUN echo "nameserver 8.8.8.8" > /etc/yum.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/yum.conf && \
+# Set DNS and install MySQL
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf && \
     yum clean all && \
     yum makecache && \
     yum -y update && \
