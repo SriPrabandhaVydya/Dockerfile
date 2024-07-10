@@ -4,7 +4,7 @@ pipeline {
     stage ('Build') {
       steps {
         bat 'set'
-        bat 'docker build -t sriprabandhavydya/jenkinsdemo:%GIT_COMMIT% .'
+        bat 'docker build --dns=8.8.8.8 --dns=8.8.4.4 -t sriprabandhavydya/jenkinsdemo:%GIT_COMMIT% .'
       }
     }
     
